@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 const secret = process.env.COOKIE_SECRET;
 const frontendBaseURL = process.env.FRONTEND_BASE_URL;
 
-// ✅ Middlewares
+//  Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(secret));
@@ -24,7 +24,7 @@ app.use(
   })
 );
 
-// ✅ Routes
+//  Routes
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 
@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello, Welcome To Vooshfoods" });
 });
 
-// ✅ Start Server
+// Start Server
 app.listen(PORT, async () => {
   await connectDB();
   console.log(`✅ Server started on PORT: ${PORT}`);
