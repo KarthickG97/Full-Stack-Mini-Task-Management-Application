@@ -8,7 +8,10 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useState } from "react";
 
-const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
+// ✅ fallback added for safety (no structural change)
+const baseUrl =
+  import.meta.env.VITE_BACKEND_BASE_URL ||
+  "https://full-stack-mini-task-management.onrender.com";
 
 const OAuth = ({ title }) => {
   const auth = getAuth(app);
@@ -26,8 +29,8 @@ const OAuth = ({ title }) => {
     try {
       const resultsFromGoogle = await signInWithPopup(auth, provider);
 
-      // ✅ Debug log to verify backend URL
-      console.log("Backend URL:", baseUrl);
+      // ✅ Confirm backend URL before sending
+      console.log("🔥 Backend URL in use:", baseUrl);
 
       const res = await fetch(`${baseUrl}/api/v1/user/google`, {
         method: "POST",
@@ -48,11 +51,12 @@ const OAuth = ({ title }) => {
         toast.success("Login successful!");
         navigate("/");
       } else {
+        console.error("Google Login Response Error:", data);
         toast.error(data?.message || "Google login failed");
       }
     } catch (error) {
-      console.error("Google Login Error:", error);
-      toast.error("Google Sign-in was cancelled or failed. Please try again.");
+      console.error("🔥 Google Login Error:", error);
+      toast.error("Google Sign-in failed or was cancelled. Try again.");
     } finally {
       setLoading(false);
     }
