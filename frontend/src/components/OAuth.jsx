@@ -1,27 +1,34 @@
 /* eslint-disable react/prop-types */
-// import { Button } from "flowbite-react";
-
 import Button from "./Button";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { app } from "../firebase";
 import { useDispatch } from "react-redux";
-//logout
 import { setCredentials } from "../redux/features/auth/authSlice";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { useState } from "react";
+
 const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL;
 
 const OAuth = ({ title }) => {
   const auth = getAuth(app);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleGoogleClick = async () => {
+    if (loading) return; // prevent double click
+    setLoading(true);
+
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
+
     try {
       const resultsFromGoogle = await signInWithPopup(auth, provider);
-      //   console.log(resultsFromGoogle);
+
+      // ✅ Debug log to verify backend URL
+      console.log("Backend URL:", baseUrl);
+
       const res = await fetch(`${baseUrl}/api/v1/user/google`, {
         method: "POST",
         headers: {
@@ -35,23 +42,30 @@ const OAuth = ({ title }) => {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         dispatch(setCredentials(data));
-        toast.success("Login successful");
+        toast.success("Login successful!");
         navigate("/");
+      } else {
+        toast.error(data?.message || "Google login failed");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Google Login Error:", error);
+      toast.error("Google Sign-in was cancelled or failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Button
       type="button"
-      className="bg-blue-600 text-white  mx-auto block rounded-md p-2 m-4 justify-center"
+      className="bg-blue-600 text-white mx-auto block rounded-md p-2 m-4 justify-center"
       onClick={handleGoogleClick}
+      disabled={loading}
     >
-      {title}
+      {loading ? "Connecting..." : title}
     </Button>
   );
 };
